@@ -66,7 +66,7 @@ function getCardPosition(
   return position;
 }
 
-function creditCardType(cardNumber: string): Array<CreditCardType> {
+export function creditCardType(cardNumber: string): Array<CreditCardType> {
   const results = [] as CreditCardType[];
 
   if (!isValidInputType(cardNumber)) {
