@@ -2,11 +2,11 @@
 
 - Update `braces` to 3.0.3
 
-# 10.0.0 
+# 10.0.0
 
 - BREAKING CHANGES
   - Update Node to v18
--DevDependencies
+    -DevDependencies
   - Update prettier to v3
   - Update eslint-plugin-prettier to v5
   - Typescript to v5

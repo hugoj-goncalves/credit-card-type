@@ -1,7 +1,8 @@
-import creditCardType = require("../index");
+import { expect } from "chai";
+import creditCardType from "../index";
 
 describe("creditCardType", () => {
-  it.each([
+  [
     ["411", "visa"],
     ["4111111111111111", "visa"],
     ["4012888888881881", "visa"],
@@ -148,19 +149,21 @@ describe("creditCardType", () => {
     ["637568", "hiper"],
     ["63737423", "hiper"],
     ["63743358", "hiper"],
-  ])("Matches %s to brand %s", (number, cardType) => {
-    const actual = creditCardType(number);
+  ].forEach(([number, cardType]) => {
+    it(`Matches ${number} to brand ${cardType}`, () => {
+      const actual = creditCardType(number);
 
-    try {
-      expect(actual).toHaveLength(1);
-    } catch (e) {
-      console.log(actual); // eslint-disable-line no-console
-      throw e;
-    }
-    expect(actual[0].type).toBe(cardType);
+      try {
+        expect(actual).to.length(1);
+      } catch (e) {
+        console.log(actual); // eslint-disable-line no-console
+        throw e;
+      }
+      expect(actual[0].type).equal(cardType);
+    });
   });
 
-  it.each([
+  [
     [
       "",
       [
@@ -222,13 +225,17 @@ describe("creditCardType", () => {
     ["655", ["discover", "maestro", "elo"]],
     ["6550", ["discover", "maestro", "elo"]],
     ["65502", ["discover", "maestro", "elo"]],
-  ])("Matches %s to array %p", (number, expectedNames) => {
-    const actualNames = creditCardType(number).map((cardType) => cardType.type);
+  ].forEach(([number, expectedNames]) => {
+    it(`Matches ${number} to array ${expectedNames}`, () => {
+      const actualNames = creditCardType(number as string).map(
+        (cardType) => cardType.type,
+      );
 
-    expect(expectedNames).toEqual(actualNames);
+      expect(expectedNames).deep.equal(actualNames);
+    });
   });
 
-  it.each([
+  [
     "0",
     "12",
     "123",
@@ -245,11 +252,13 @@ describe("creditCardType", () => {
     "33",
     "7",
     "9",
-  ])("returns an empty array for %s", (unknown) => {
-    expect(creditCardType(unknown)).toHaveLength(0);
+  ].forEach((unknown) => {
+    it(`returns an empty array for ${unknown}`, () => {
+      expect(creditCardType(unknown)).to.length(0);
+    });
   });
 
-  it.each([
+  [
     ["Mastercard", "5454545454545454", { size: 3, name: "CVC" }],
     ["Visa", "4111111111111111", { size: 3, name: "CVV" }],
     ["American Express", "378734493671000", { size: 4, name: "CID" }],
@@ -259,13 +268,16 @@ describe("creditCardType", () => {
     ["UnionPay", "6220558812340000", { size: 3, name: "CVN" }],
     ["Maestro", "6304000000000000", { size: 3, name: "CVC" }],
     ["Mir", "2200000000000000", { size: 3, name: "CVP2" }],
-  ])("returns security codes for %s", (brand, number, code) => {
-    const parsedCode = creditCardType(number)[0].code;
+  ].forEach(([brand, number, code]) => {
+    it(`returns security codes for ${brand}`, () => {
+      const parsedCode = creditCardType(number as string)[0].code;
 
-    expect(parsedCode).toMatchObject(code);
+      expect(parsedCode.size).deep.equal((code as any)["size"]);
+      expect(parsedCode.name).deep.equal((code as any)["name"]);
+    });
   });
 
-  it.each([
+  [
     [
       "Maestro",
       "6304000000000000",
@@ -277,17 +289,19 @@ describe("creditCardType", () => {
     ["Mastercard", "54", { type: "mastercard", lengths: [16] }],
     ["JCB", "35", { type: "jcb", lengths: [16, 17, 18, 19] }],
     ["Mir", "220", { type: "mir", lengths: [16, 17, 18, 19] }],
-  ])("returns lengths for %s", (brand, number, meta) => {
-    const cardType = creditCardType(number)[0];
-
-    expect(cardType).toMatchObject(meta);
+  ].forEach(([brand, number, meta]) => {
+    it(`returns lengths for ${brand}`, () => {
+      const cardType = creditCardType(number as any)[0];
+      expect(cardType.type).deep.equal((meta as any)["type"]);
+      expect(cardType.lengths).deep.equal((meta as any)["lengths"]);
+    });
   });
 
   it("preserves integrity of returned values", () => {
     const result = creditCardType("4111111111111111")[0];
 
     result.type = "whaaaaaat";
-    expect(creditCardType("4111111111111111")[0].type).toBe("visa");
+    expect(creditCardType("4111111111111111")[0].type).equal("visa");
   });
 });
 
@@ -295,12 +309,12 @@ describe("getTypeInfo", () => {
   it("returns card type information", () => {
     const info = creditCardType.getTypeInfo(creditCardType.types.VISA);
 
-    expect(info.type).toBe("visa");
-    expect(info.niceType).toBe("Visa");
+    expect(info.type).equal("visa");
+    expect(info.niceType).equal("Visa");
   });
 
   it("returns null for an unknown card type", () => {
-    expect(creditCardType.getTypeInfo("gibberish")).toBeNull();
+    expect(creditCardType.getTypeInfo("gibberish")).to.be.null;
   });
 });
 
@@ -310,11 +324,11 @@ describe("resetModifications", () => {
 
     creditCardType.removeCard("mastercard");
 
-    expect(creditCardType("")).not.toEqual(original);
+    expect(creditCardType("")).not.equal(original);
 
     creditCardType.resetModifications();
 
-    expect(creditCardType("")).toEqual(original);
+    expect(creditCardType("")).deep.equal(original);
   });
 
   it("resets card additions", () => {
@@ -332,11 +346,11 @@ describe("resetModifications", () => {
       },
     });
 
-    expect(creditCardType("")).not.toEqual(original);
+    expect(creditCardType("")).not.equal(original);
 
     creditCardType.resetModifications();
 
-    expect(creditCardType("")).toEqual(original);
+    expect(creditCardType("")).deep.equal(original);
   });
 
   it("resets card modifications", () => {
@@ -354,11 +368,11 @@ describe("resetModifications", () => {
       },
     });
 
-    expect(creditCardType("")).not.toEqual(original);
+    expect(creditCardType("")).not.equal(original);
 
     creditCardType.resetModifications();
 
-    expect(creditCardType("")).toEqual(original);
+    expect(creditCardType("")).deep.equal(original);
   });
 
   it("resets order changes", () => {
@@ -366,11 +380,11 @@ describe("resetModifications", () => {
 
     creditCardType.changeOrder("visa", 4);
 
-    expect(creditCardType("")).not.toEqual(original);
+    expect(creditCardType("")).not.equal(original);
 
     creditCardType.resetModifications();
 
-    expect(creditCardType("")).toEqual(original);
+    expect(creditCardType("")).deep.equal(original);
   });
 });
 
@@ -384,15 +398,15 @@ describe("removeCard", () => {
 
     const result = creditCardType("2");
 
-    expect(result).toHaveLength(2);
-    expect(result[0].type).toBe("jcb");
-    expect(result[1].type).toBe("mir");
+    expect(result).to.length(2);
+    expect(result[0].type).equal("jcb");
+    expect(result[1].type).equal("mir");
   });
 
   it("throws an error if card type is passed which is not in the array", () => {
     expect(() => {
       creditCardType.removeCard("bogus");
-    }).toThrowError('"bogus" is not a supported card type.');
+    }).to.throw('"bogus" is not a supported card type.');
   });
 });
 
@@ -416,21 +430,21 @@ describe("addCard", () => {
 
     const result = creditCardType("2");
 
-    expect(result).toHaveLength(4);
-    expect(result[0].type).toBe("mastercard");
-    expect(result[1].type).toBe("jcb");
-    expect(result[2].type).toBe("mir");
-    expect(result[3].type).toBe("new-card");
+    expect(result).to.length(4);
+    expect(result[0].type).equal("mastercard");
+    expect(result[1].type).equal("jcb");
+    expect(result[2].type).equal("mir");
+    expect(result[3].type).equal("new-card");
   });
 
   it("can overwrite existing cards", () => {
     let result = creditCardType("4111111");
 
-    expect(result).toHaveLength(1);
-    expect(result[0].type).toBe("visa");
-    expect(result[0].niceType).toBe("Visa");
-    expect(result[0].code.name).toBe("CVV");
-    expect(result[0].lengths).toEqual([16, 18, 19]);
+    expect(result).to.length(1);
+    expect(result[0].type).equal("visa");
+    expect(result[0].niceType).equal("Visa");
+    expect(result[0].code.name).equal("CVV");
+    expect(result[0].lengths).deep.equal([16, 18, 19]);
 
     creditCardType.addCard({
       niceType: "Custom Visa Nice Type",
@@ -446,17 +460,17 @@ describe("addCard", () => {
 
     result = creditCardType("4111111");
 
-    expect(result).toHaveLength(1);
-    expect(result[0].type).toBe("visa");
-    expect(result[0].niceType).toBe("Custom Visa Nice Type");
-    expect(result[0].code.name).toBe("Security Code");
-    expect(result[0].lengths).toEqual([16]);
+    expect(result).to.length(1);
+    expect(result[0].type).equal("visa");
+    expect(result[0].niceType).equal("Custom Visa Nice Type");
+    expect(result[0].code.name).equal("Security Code");
+    expect(result[0].lengths).deep.equal([16]);
   });
 
   it("adds new card to last position in card list", () => {
     let result = creditCardType("2");
 
-    expect(result).toHaveLength(3);
+    expect(result).to.length(3);
 
     creditCardType.addCard({
       niceType: "NewCard",
@@ -472,8 +486,8 @@ describe("addCard", () => {
 
     result = creditCardType("2");
 
-    expect(result).toHaveLength(4);
-    expect(result[3].type).toBe("new-card");
+    expect(result).to.length(4);
+    expect(result[3].type).equal("new-card");
 
     creditCardType.addCard({
       niceType: "NewCard 2",
@@ -489,9 +503,9 @@ describe("addCard", () => {
 
     result = creditCardType("2");
 
-    expect(result).toHaveLength(5);
-    expect(result[3].type).toBe("new-card");
-    expect(result[4].type).toBe("another-new-card");
+    expect(result).to.length(5);
+    expect(result[3].type).equal("new-card");
+    expect(result[4].type).equal("another-new-card");
   });
 });
 
@@ -503,7 +517,7 @@ describe("updateCard", () => {
   it("throws an error if the card type does not exist", () => {
     expect(() => {
       creditCardType.updateCard("foo", {});
-    }).toThrowError('"foo" is not a recognized type. Use `addCard` instead.');
+    }).to.throw('"foo" is not a recognized type. Use `addCard` instead.');
   });
 
   it("throws an error if the type field in the updates object exists and does not match", () => {
@@ -511,7 +525,7 @@ describe("updateCard", () => {
       creditCardType.updateCard(creditCardType.types.VISA, {
         type: "not visa",
       });
-    }).toThrowError("Cannot overwrite type parameter.");
+    }).to.throw("Cannot overwrite type parameter.");
   });
 
   it("does not throw an error if the type field in the updates object exists and does match", () => {
@@ -519,7 +533,7 @@ describe("updateCard", () => {
       creditCardType.updateCard(creditCardType.types.VISA, {
         type: "visa",
       });
-    }).not.toThrowError();
+    }).not.to.throw();
   });
 
   it("updates existing card", () => {
@@ -530,15 +544,15 @@ describe("updateCard", () => {
 
     const updatedVisa = creditCardType.getTypeInfo(creditCardType.types.VISA);
 
-    expect(updatedVisa.niceType).toBe("Fancy Visa");
-    expect(updatedVisa.lengths).toEqual([11, 16, 18, 19]);
-    expect(updatedVisa.gaps).toEqual([4, 8, 12]);
-    expect(updatedVisa.code).toEqual({
+    expect(updatedVisa.niceType).equal("Fancy Visa");
+    expect(updatedVisa.lengths).deep.equal([11, 16, 18, 19]);
+    expect(updatedVisa.gaps).deep.equal([4, 8, 12]);
+    expect(updatedVisa.code).deep.equal({
       name: "CVV",
       size: 3,
     });
 
-    expect(creditCardType("4")[0].niceType).toEqual("Fancy Visa");
+    expect(creditCardType("4")[0].niceType).equal("Fancy Visa");
   });
 
   it("can update pattern", () => {
@@ -546,7 +560,7 @@ describe("updateCard", () => {
       patterns: [3],
     });
 
-    expect(creditCardType("3")[0].type).toBe("visa");
+    expect(creditCardType("3")[0].type).equal("visa");
   });
 
   it("can update more than once", () => {
@@ -558,8 +572,8 @@ describe("updateCard", () => {
 
     updatedVisa = creditCardType.getTypeInfo(creditCardType.types.VISA);
 
-    expect(updatedVisa.lengths).toEqual([11]);
-    expect(updatedVisa.niceType).toBe("Visa");
+    expect(updatedVisa.lengths).deep.equal([11]);
+    expect(updatedVisa.niceType).equal("Visa");
 
     creditCardType.updateCard(creditCardType.types.VISA, {
       niceType: "Fancy Visa",
@@ -567,8 +581,8 @@ describe("updateCard", () => {
 
     updatedVisa = creditCardType.getTypeInfo(creditCardType.types.VISA);
 
-    expect(updatedVisa.niceType).toBe("Fancy Visa");
-    expect(updatedVisa.lengths).toEqual([11]);
+    expect(updatedVisa.niceType).equal("Fancy Visa");
+    expect(updatedVisa.lengths).deep.equal([11]);
   });
 
   it("can update custom cards", () => {
@@ -588,7 +602,7 @@ describe("updateCard", () => {
 
     card = creditCardType.getTypeInfo("new-card");
 
-    expect(card.niceType).toBe("NewCard");
+    expect(card.niceType).equal("NewCard");
 
     creditCardType.updateCard(card.type, {
       niceType: "Fancy NewCard",
@@ -596,7 +610,7 @@ describe("updateCard", () => {
 
     card = creditCardType.getTypeInfo("new-card");
 
-    expect(card.niceType).toBe("Fancy NewCard");
+    expect(card.niceType).equal("Fancy NewCard");
   });
 });
 
@@ -610,16 +624,16 @@ describe("changeOrder", () => {
 
     const result = creditCardType("2");
 
-    expect(result).toHaveLength(3);
-    expect(result[0].type).toBe("jcb");
-    expect(result[1].type).toBe("mastercard");
-    expect(result[2].type).toBe("mir");
+    expect(result).to.length(3);
+    expect(result[0].type).equal("jcb");
+    expect(result[1].type).equal("mastercard");
+    expect(result[2].type).equal("mir");
   });
 
   it("throws an error if card type is passed which is not in the array", () => {
     expect(() => {
       creditCardType.changeOrder("bogus", 0);
-    }).toThrowError('"bogus" is not a supported card type.');
+    }).to.throw('"bogus" is not a supported card type.');
   });
 });
 
@@ -630,6 +644,6 @@ describe("types", () => {
     );
     const internalTypes = creditCardType("").map((entry) => entry.type);
 
-    expect(exposedTypes).toEqual(internalTypes);
+    expect(exposedTypes).deep.equal(internalTypes);
   });
 });

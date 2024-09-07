@@ -193,4 +193,4 @@ const cardTypes: CardCollection = {
   } as BuiltInCreditCardType,
 };
 
-export = cardTypes;
+export default cardTypes;

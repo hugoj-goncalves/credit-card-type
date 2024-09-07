@@ -3,11 +3,12 @@
     "allowJs": true,
     "esModuleInterop": true,
     "outDir": "./dist",
-    "module": "commonjs",
-    "target": "es5",
+    "module": "ES2022",
+    "target": "ES2022",
     "lib": ["es2015", "dom"],
-    "strict": true
+    "strict": true,
+    "typeRoots": ["node_modules/@types"]
   },
   "include": ["./src/**/*"],
-  "exclude": ["./src/__tests__/**/*"]
+  "exclude": ["./src/__tests__/**/*", "node_modules"]
 }

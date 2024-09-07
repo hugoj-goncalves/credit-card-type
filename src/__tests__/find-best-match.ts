@@ -1,10 +1,11 @@
+import { expect } from "chai";
 import { findBestMatch } from "../lib/find-best-match";
 
 import { createFakeCreditCardType } from "./helper";
 
 describe("findBestMatch", () => {
   it("returns nothing if there are not enough results to try to match", () => {
-    expect(findBestMatch([])).toBeNull();
+    expect(findBestMatch([])).to.be.null;
   });
 
   it("returns nothing if not every element has a matchStrength property", () => {
@@ -14,7 +15,7 @@ describe("findBestMatch", () => {
         createFakeCreditCardType({}),
         createFakeCreditCardType({ matchStrength: 5 }),
       ]),
-    ).toBeNull();
+    ).to.be.null;
   });
 
   it("returns the result with the greatest matchStrength value", () => {
@@ -24,6 +25,6 @@ describe("findBestMatch", () => {
     const d = createFakeCreditCardType({ matchStrength: 7 });
     const results = [a, b, c, d];
 
-    expect(findBestMatch(results)).toBe(c);
+    expect(findBestMatch(results)).equal(c);
   });
 });
