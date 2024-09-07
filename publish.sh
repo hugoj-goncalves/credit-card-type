@@ -1,7 +1,7 @@
 #!/bin/bash
 
 function build {
-  npm run build && cp package.json dist
+  npm run build
 }
 
 function updateVersion {
@@ -33,8 +33,6 @@ if [ $? -eq 1 ]; then
 fi
 git push
 
-pushd dist
 npm config set scope @eklesia
 npm config set access public
 npm publish
-popd
